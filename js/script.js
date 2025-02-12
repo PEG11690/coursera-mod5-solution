@@ -70,10 +70,12 @@ document.addEventListener("DOMContentLoaded", function (event) {
 // below.
 // We changed this code to retrieve all categories from the server instead of
 // simply requesting home HTML snippet. We now also have another function
-// called buildAndShowHomeHTML that will receive all the categories from the server
-// and process them: choose random category, retrieve home HTML snippet, insert that
-// random category into the home HTML snippet, and then insert that snippet into our
-// main page (index.html).
+// called buildAndShowHomeHTML that will 
+//          1. receive all the categories from the server and process them: 
+//          2. choose random category, 
+//          3. retrieve home HTML snippet, 
+//          4. insert that random category into the home HTML snippet, 
+//          5. then insert that snippet into our main page (index.html).
 //
 // TODO: STEP 1: Substitute [...] below with the *value* of the function buildAndShowHomeHTML,
 // so it can be called when server responds with the categories data.
@@ -83,7 +85,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 showLoading("#main-content");
 $ajaxUtils.sendGetRequest(
   allCategoriesUrl,
-  [...], // ***** <---- TODO: STEP 1: Substitute [...] ******
+  buildAndShowHomeHTML, // ***** <---- TODO: STEP 1: Substitute [...] ******
   true); // Explicitly setting the flag to get JSON from server processed into an object literal
 });
 // *** finish **
@@ -96,7 +98,20 @@ function buildAndShowHomeHTML (categories) {
   // Load home snippet page
   $ajaxUtils.sendGetRequest(
     homeHtmlUrl,
-    function (homeHtml) {
+    function (homeHtmlUrl) {
+
+      var randomCategoryShortName = chooseRandomCategory (categories); 
+
+      var homeViewHtml = homeHtmlUrl;
+      homeViewHtml = insertProperty(
+        homeViewHtml,
+        "randomCategoryShortName",
+        "'"+randomCategoryShortName+"'"
+        );
+     insertHtml( "#main-content",homeViewHtml);
+    },
+    false  // False here because we are getting just regular HTML from the server, so no need to process JSON.
+    );
 
       // TODO: STEP 2: Here, call chooseRandomCategory, passing it retrieved 'categories'
       // Pay attention to what type of data that function returns vs what the chosenCategoryShortName
@@ -123,23 +138,22 @@ function buildAndShowHomeHTML (categories) {
       // of how to do that.
       // ....
 
-    },
-    false); // False here because we are getting just regular HTML from the server, so no need to process JSON.
-}
+    }
 
 
 // Given array of category objects, returns a random category object.
 function chooseRandomCategory (categories) {
   // Choose a random index into the array (from 0 inclusively until array length (exclusively))
   var randomArrayIndex = Math.floor(Math.random() * categories.length);
-
-  // return category object with that randomArrayIndex
-  return categories[randomArrayIndex];
+ // return category object with that randomArrayIndex
+  return categories[randomArrayIndex].short_name;
+  
 }
 
 
 // Load the menu categories view
 dc.loadMenuCategories = function () {
+  console.log("loadMenuCategories function");
   showLoading("#main-content");
   $ajaxUtils.sendGetRequest(
     allCategoriesUrl,
@@ -150,6 +164,7 @@ dc.loadMenuCategories = function () {
 // Load the menu items view
 // 'categoryShort' is a short_name for a category
 dc.loadMenuItems = function (categoryShort) {
+  console.log("loadMenuItems function");
   showLoading("#main-content");
   $ajaxUtils.sendGetRequest(
     menuItemsUrl + categoryShort + ".json",
